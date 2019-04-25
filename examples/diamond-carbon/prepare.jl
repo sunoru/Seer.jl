@@ -1,20 +1,19 @@
 # Prepare: load data and configure settings.
 # Use a script file instead of a config text file to prepare the run, since it could make 
 
-using Seer
+import Seer
+import Seer: NetworkInput, NetworkOutput, TrainingAlgorithms
 
 function data_training()
     data_files = [joinpath(@__DIR__, "data", string(i)) for i in 1:250]
-    load_data(DataFile.VASP, data_files)
 end
 
 function data_predict()
     data_files = [joinpath(@__DIR__, "data", string(i)) for i in 251:300]
-    load_data(DataFile.VASP, data_files)
 end
 
-function configure(continuing::Bool = false)
-    configure(
+function configure(datalist::Vector{<:AbstractString}, continuing::Bool = false)
+    Seer.configure(
         # Network settings
         input = NetworkInput.Structure, # Use structure configuration as input.
         output = NetworkOutput.Energy,  # Use total energy as output.
@@ -32,6 +31,6 @@ function configure(continuing::Bool = false)
         checkpoint_filename = "potential",                             # Filename prefix for checkpoints.
         period_checkpoint = 100,                                       # Save checkpoints every 100 steps.
         # Others
-        random_seed = 200701281 # Random seed for reproducibility.
+        random_seed = 200701281, # Random seed for reproducibility.
     )
 end

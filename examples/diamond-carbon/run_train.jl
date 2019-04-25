@@ -1,6 +1,6 @@
 include("prepare.jl")
 
-data = data_training()
+datalist = data_training()
 config = configure()
 
-results = Seer.train(data, config)
+results = Seer.train(datalist, config; datatype = Seer.DataFile.VASP)

@@ -5,20 +5,22 @@ macro type_enum(name, expr)
     types = Symbol[]
     for (i, sym) in enumerate(expr.args)
         if sym isa Symbol
-            expr.args[i] = :(const $sym = Val{Symbol($(string(name, "_", sym)))})
-            push!(types, sym)
+            expr.args[i] = :(struct $sym <: $name end)
         end
     end
-    push!(expr.args, :(
-        const $name = Union{$(types...)}
-    ))
+    insert!(expr.args, 1,:(abstract type $name end))
     esc(expr)
 end
 
-
 macro export_internal(expr)
-    const_export(expr) = :(const $(expr.args[end].value) = $expr)
     @assert expr isa Expr
+    const_export(expr) = begin
+        sym = expr.args[end].value
+        quote
+            const $sym = $expr
+            export $sym
+        end
+    end
     if expr.head === :tuple
         results = quote end
         results.args = [const_export(subexpr) for subexpr in expr.args]
