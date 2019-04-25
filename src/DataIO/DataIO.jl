@@ -5,7 +5,7 @@ import ..NetworkInput
 import ..NetworkOutput
 import ..Configurations: Config
 
-mutable struct Data{T <: DataFile.DataFileType, I <: NetworkInput.NetworkInputType, O <: NetworkOutput.NetworkOutputType}
+mutable struct Data{I <: NetworkInput.NetworkInputType, O <: NetworkOutput.NetworkOutputType}
     data_pairs::Vector{Tuple{I, O}}
 end
 
@@ -15,7 +15,7 @@ function load_data(type::Type{<:DataFile.DataFileType}, filenames::Vector{<:Abst
         output = load_data(filename, type, config.output)
         (input, output)
     end for file in filenames]
-    Data{type, config.input, config.output}(data_pairs)
+    Data(data_pairs)
 end
 
 include("vasp.jl")

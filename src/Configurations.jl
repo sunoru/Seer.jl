@@ -7,8 +7,8 @@ import ..NetworkOutput
 import ..TrainingAlgorithms
 
 mutable struct Config
-    input::NetworkInput.NetworkInputType
-    output::NetworkOutput.NetworkOutputType
+    input::Type{<:NetworkInput.NetworkInputType}
+    output::Type{<:NetworkOutput.NetworkOutputType}
     hidden_layers::Vector{Int}
     transfer::Function
     
@@ -16,7 +16,7 @@ mutable struct Config
     num_radial::Int
     num_angular::Int
     
-    algorithm::TrainingAlgorithms.TrainingAlgorithmType
+    algorithm::Type{<:TrainingAlgorithms.TrainingAlgorithmType}
     num_iteration::Int
     threshold::Float64
     period_logging::Int

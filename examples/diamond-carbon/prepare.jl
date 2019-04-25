@@ -12,7 +12,7 @@ function data_predict()
     data_files = [joinpath(@__DIR__, "data", string(i)) for i in 251:300]
 end
 
-function configure(datalist::Vector{<:AbstractString}, continuing::Bool = false)
+function configure(continuing::Bool = false)
     Seer.configure(
         # Network settings
         input = NetworkInput.Structure, # Use structure configuration as input.
