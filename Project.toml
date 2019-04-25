@@ -1,0 +1,7 @@
+name = "Seer"
+uuid = "c5922bf0-771d-5d11-9308-12d20d499050"
+authors = ["sunoru <s@sunoru.com>"]
+version = "0.1.0"
+
+[deps]
+RandomNumbers = "e6cf234a-135c-5ec9-84dd-332b85af5143"
