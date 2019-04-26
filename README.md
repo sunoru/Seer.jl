@@ -12,7 +12,7 @@ Code Coverage:
 
 ## Usage
 
-See the [examples](./examples) for usage.
+See the [examples](./examples) or the [tests](./test/runtents.jl) for usage.
 
 ## License
 

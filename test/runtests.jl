@@ -1,5 +1,4 @@
 using Seer
 
-cd("../examples/diamond-carbon") do
-    include(joinpath(pwd(), "run_train.jl"))
-end
+# Load structure from vasp data.
+Seer.DataIO.load_data(NetworkInput.Structure, "../examples/diamond-carbon/data/1", DataFile.VASP)

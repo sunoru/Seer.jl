@@ -2,6 +2,8 @@ module Seer
 
 include("Utils.jl")
 
+include("Bases.jl")
+
 include("DataFile.jl")
 export DataFile
 

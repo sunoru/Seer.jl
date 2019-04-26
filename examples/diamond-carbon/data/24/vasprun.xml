@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<modeling>
  <atominfo>
   <atoms>      64 </atoms>
   <types>       1 </types>
@@ -166,6 +167,7 @@
    <v>       0.49693288       0.49536338       0.49742619 </v>
   </varray>
  </structure>
-<energy>
-<i name="e_wo_entrp">  -612.81090466 </i>
-</energy>
+ <energy>
+  <i name="e_wo_entrp">  -612.81090466 </i>
+ </energy>
+</modeling>
