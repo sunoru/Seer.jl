@@ -4,13 +4,9 @@
 import Seer
 import Seer: NetworkInput, NetworkOutput, TrainingAlgorithms
 
-function data_training()
-    data_files = [joinpath(@__DIR__, "data", string(i)) for i in 1:250]
-end
+data_training() = [joinpath(@__DIR__, "data", string(i)) for i in 1:250]
 
-function data_predict()
-    data_files = [joinpath(@__DIR__, "data", string(i)) for i in 251:300]
-end
+data_predict() = [joinpath(@__DIR__, "data", string(i)) for i in 251:300]
 
 function configure(continuing::Bool = false)
     Seer.configure(
@@ -28,9 +24,11 @@ function configure(continuing::Bool = false)
         num_iteration = 300,                                           # Run 300 iterations for training.
         threshold = 0.0,                                               # Threshold based on gradient for stopping.
         period_logging = 10,                                           # Log every 10 steps.
-        checkpoint_filename = "potential",                             # Filename prefix for checkpoints.
+        checkpoint_input = continuing ? "potential" : nothing,         # Filename prefix for input checkpoints.
+        checkpoint_output = "potential",                               # Filename prefix for checkpoints.
         period_checkpoint = 100,                                       # Save checkpoints every 100 steps.
         # Others
         random_seed = 200701281, # Random seed for reproducibility.
+        force_restart = !continuing
     )
 end

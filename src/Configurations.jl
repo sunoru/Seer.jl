@@ -2,6 +2,7 @@ module Configurations
 
 import RandomNumbers.Xorshifts: Xoshiro256StarStar
 
+import ..Bases: Nullable
 import ..NetworkInput
 import ..NetworkOutput
 import ..TrainingAlgorithms
@@ -20,10 +21,12 @@ mutable struct Config
     num_iteration::Int
     threshold::Float64
     period_logging::Int
-    checkpoint_filename::String
+    checkpoint_input::Nullable{String}
+    checkpoint_output::String
     period_checkpoint::Int
 
     rng::Xoshiro256StarStar
+    force_restart::Bool
 end
 
 function configure(;
@@ -38,17 +41,19 @@ function configure(;
     num_iteration = 300,
     threshold = 0.0,
     period_logging = 10,
-    checkpoint_filename = "potential",
+    checkpoint_input = nothing,
+    checkpoint_output = "checkpoint",
     period_checkpoint = 100,
-    random_seed = 0
+    random_seed = 0,
+    force_restart = false,
 )
     rng = random_seed > 0 ? Xoshiro256StarStar(random_seed) : Xoshiro256StarStar()
     Config(
         input, output, hidden_layers, transfer,
         cutoff_radius, num_radial, num_angular,
         algorithm, num_iteration, threshold, period_logging,
-        checkpoint_filename, period_checkpoint,
-        rng
+        checkpoint_input, checkpoint_output, period_checkpoint,
+        rng, force_restart
     )
 end
 

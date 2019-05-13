@@ -14,7 +14,7 @@ function load_data(type::Type{<:DataFile.DataFileType}, filenames::Vector{<:Abst
         input = load_data(config.input, filename, type)
         output = load_data(config.output, filename, type)
         (input, output)
-    end for file in filenames]
+    end for filename in filenames]
     Data(data_pairs)
 end
 

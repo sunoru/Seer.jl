@@ -20,6 +20,8 @@ Utils.@export_internal Configurations.Config, Configurations.configure
 include("DataIO/DataIO.jl")
 Utils.@export_internal DataIO.Data
 
+include("Network/Network.jl")
+
 include("Main.jl")
 Utils.@export_internal Main.train, Main.validate #, Main.predict
 

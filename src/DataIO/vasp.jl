@@ -1,15 +1,19 @@
 import EzXML
+import PeriodicTable: elements
 
 import ..Bases: Vector3, Matrix3
 import ..DataFile
 import ..NetworkInput
+import ..NetworkInput: _structure
 import ..NetworkOutput
 
+function vasp_readfile(fname)
+    fname = endswith(fname, "xml") ? fname : joinpath(fname, "vasprun.xml")
+    EzXML.readxml(fname)
+end
+
 function load_data(::Type{NetworkInput.Structure}, filename::AbstractString, ::Type{DataFile.VASP})
-    if !endswith(filename, "xml")
-        filename = joinpath(filename, "vasprun.xml")
-    end
-    doc = EzXML.readxml(filename)
+    doc = vasp_readfile(filename)
     atominfo_node = findfirst("//atominfo", doc)
     n_atoms = parse(Int, findfirst("./atoms", atominfo_node).content)
     n_types = parse(Int, findfirst("./types", atominfo_node).content)
@@ -20,8 +24,8 @@ function load_data(::Type{NetworkInput.Structure}, filename::AbstractString, ::T
         [node.content for node in field_nodes])
     )
     atom_list = findall("./set/rc", atoms_node)
-    atom_types = String[
-        strip(nodes[element_i].content) * strip(nodes[atomtype_i].content)
+    atom_types = [
+        _structure.AtomType(elements[Symbol(strip(nodes[element_i].content))].number, parse(Int, strip(nodes[atomtype_i].content)))
         for nodes in (findall("./c", node) for node in atom_list)
     ]
 
@@ -42,5 +46,8 @@ function load_data(::Type{NetworkInput.Structure}, filename::AbstractString, ::T
 end
 
 function load_data(::Type{NetworkOutput.Energy}, filename::AbstractString, ::Type{DataFile.VASP})
-    energy = NetworkOutput.Energy()
+    doc = vasp_readfile(filename)
+    energy_node = findfirst("//energy/i[@name='e_wo_entrp']", doc)
+    energy = parse(Float64, energy_node.content)
+    NetworkOutput.Energy(energy)
 end
