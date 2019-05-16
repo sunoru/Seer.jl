@@ -2,6 +2,8 @@ module Network
 
 include("./types.jl")
 
-include("./init_structure.jl")
+include("./common.jl")
+
+include("./potential_train.jl")
 
 end

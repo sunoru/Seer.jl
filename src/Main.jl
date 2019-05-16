@@ -8,7 +8,8 @@ import ..Network
 
 function train(filenames::Vector{<:AbstractString}, config::Config; datatype::Type{<:DataFile.DataFileType} = DataFile.VASP)
     data = load_data(datatype, filenames, config)
-    Network.initialize(data, config)
+    setup = Network.initialize(data, config)
+    train!(setup)
 end
 
 function validate(filenames::Vector{<:AbstractString}, config::Config; datatype::Type{<:DataFile.DataFileType} = DataFile.VASP)
