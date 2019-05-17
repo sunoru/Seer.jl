@@ -41,6 +41,7 @@ function training_callback(setup::NetworkSetup)
         if epoch % period_logging === 0
             grad_norm = (sqrt ∘ sum)(sum(Tracker.data(g).^2) for (_, g) in grads)
             @printf "%-8d%-13.6e %.6e\n" epoch current_loss grad_norm
+            flush(stdout)
         end
     end, epoch -> begin
         if epoch % period_checkpoint === 0
