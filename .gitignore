@@ -6,3 +6,5 @@ deps/deps.jl
 
 .vscode/
 .idea/
+
+build/

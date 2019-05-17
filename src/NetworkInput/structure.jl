@@ -30,9 +30,9 @@ const G4 = G4Function[]
 const G4Prefactor = Dict{Float64, Float64}()
 
 struct Helper
+    G::Matrix{Float64}
     sums::Dict{Int, Vector{Float64}}
     counts::Dict{Int, Int}
-    G::Matrix{Float64}
 end
 
 struct Structure <: NetworkInputType
@@ -89,7 +89,7 @@ function calc_g!(
     G::Matrix{Float64}, i::Int, s::Structure,
     ng::Int, ng2::Int, ng4::Int,
     f_to_a::Matrix3,
-    translations::Vector{NTuple{3, Int}},
+    translations::Vector{Vector3},
     neighbor_list::Vector{Vector{NTuple{2, Int}}},
     element_indices::Dict{Int, Int}
 )
@@ -116,14 +116,14 @@ function calc_g!(
             element_i2 = element_indices[s.atom_types[neighbor2].element]
             i1, i2 = min(element_i, element_i2), max(element_i, element_i2)
             for j in 1:ng4
-                g4i = ng2 * n_types + ((n_types + n_types - i1 + 1) * (i1 - 1) ÷ 2 + j2 - 1) * ng4 + j
+                g4i = ng2 * n_types + ((n_types + n_types - i1 + 1) * (i1 - 1) ÷ 2 + i2 - 1) * ng4 + j
                 G[g4i, i] = calc_g4(G4[j], distance, distance2, distance3, cosθ)
             end
         end
     end
 end
 
-function init_helper(s::Structure, rcut::Float64, all_atom_types::Set{Int})
+function init_helper(s::Structure, rcut::Float64, all_atom_types::Vector{Int})
     # Conversion
     norms = Vector3([
         norm(s.basis[:, i])
@@ -140,19 +140,19 @@ function init_helper(s::Structure, rcut::Float64, all_atom_types::Set{Int})
 
     # Neighbors
     # not needed
-    lattice = NTuple{3, Int}(ceil.(1.1 * rcut ./ norms))
+    lattice = Vector3(ceil.(1.1 * rcut ./ norms))
     translations = [
-        (ix, iy, iz)
+        Vector3((ix, iy, iz))
         for ix in -lattice[1]:lattice[1]
         for iy in -lattice[2]:lattice[2]
-        for iy in -lattice[3]:lattice[3]
+        for iz in -lattice[3]:lattice[3]
     ]
     # i => [(j, t)]
-    neighbor_list = Vector{Vector{NTuple{2, Int}}}[]
+    neighbor_list = Vector{NTuple{2, Int}}[]
     n = length(s.positions)
     n_translations = length(translations)
     for i in 1:n
-        push!(neighbor_list, Vector{NTuple{2, Int}}())
+        push!(neighbor_list, NTuple{2, Int}[])
         x = s.positions[i]
         for j in 1:n
             for t in 1:n_translations
@@ -166,11 +166,11 @@ function init_helper(s::Structure, rcut::Float64, all_atom_types::Set{Int})
         end
     end
 
-    sums = Dict{Int, Float64}()
+    sums = Dict{Int, Vector{Float64}}()
     counts = Dict{Int, Int}()
     element_indices = Dict{Int, Int}()
     for i in 1:n_atom_type
-        element = all_atom_types[i].element
+        element = all_atom_types[i]
         element_indices[element] = i
         sums[element] = zeros(ng)
         counts[element] = 0
@@ -183,18 +183,19 @@ function init_helper(s::Structure, rcut::Float64, all_atom_types::Set{Int})
             neighbor_list, element_indices
         )
         element = s.atom_types[i].element
-        counts[element] += 1
         sums[element] += G[:, i]
+        counts[element] += 1
     end
 
     Helper(
-        sums, counts, G
+        G,
+        sums, counts
     )
 end
 
 function initialize!(
     s::Structure, rcut::Float64, num_radial::Int, num_angular::Int,
-    all_atom_types::Set{Int}
+    all_atom_types::Vector{Int}
 )
     # Initialize the G's
     if length(G2) + length(G4) == 0
@@ -227,12 +228,12 @@ function initialize!(
         end
     end
 
-    s.helper[] = init_helper(s, rcut)
+    s.helper[] = init_helper(s, rcut, all_atom_types)
 
     s
 end
 
-sum(s::Structure, element::Int) = s.helper[].sums[element]
+Base.sum(s::Structure, element::Int) = s.helper[].sums[element]
 
 function variance(s::Structure, element::Int, means::Vector{Float64})
     G = s.helper[].G
@@ -242,10 +243,11 @@ function variance(s::Structure, element::Int, means::Vector{Float64})
         s.atom_types[i].element !== element && continue
         var += (G[:, i] - means) .^ 2
     end
+    var
 end
 
-count(s::Structure, element::Int) = s.helper[].counts[element]
+Base.count(s::Structure, element::Int) = s.helper[].counts[element]
 
 end
 
-import ._structure: Structure, variance
+import ._structure: Structure

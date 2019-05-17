@@ -1,10 +1,12 @@
+import Flux
+
 import ..Configurations: Config
 import ..DataIO: Data
 import ..NetworkInput, ..NetworkOutput
 
 
 mutable struct NeuralNetwork
-    chain::Function
+    chain::Flux.Chain
     means::Vector{Float64}
     variances::Vector{Float64}
 end
