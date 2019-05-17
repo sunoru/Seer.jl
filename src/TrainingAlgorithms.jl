@@ -1,9 +1,13 @@
 module TrainingAlgorithms
 
+import Flux
+
 import ..Utils
 
 Utils.@type_enum TrainingAlgorithmType begin
-    ResillientBackpropagation
+    RMSProp
 end
+
+optimizer(::Type{RMSProp}) = Flux.RMSProp()
 
 end

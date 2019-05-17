@@ -1,12 +1,14 @@
 import Random: randn
 
 import Flux
+import Flux: Tracker
 
 import ..Bases: Vector3, Matrix3
 import ..DataIO: Data
 import ..Configurations: Config
 import ..NetworkInput, ..NetworkOutput
 import ..NetworkInput: _structure
+import ..TrainingAlgorithms
 
 
 function initialize!(data::Data{NetworkInput.Structure, NetworkOutput.Energy}, config::Config)
@@ -45,7 +47,8 @@ function initialize!(data::Data{NetworkInput.Structure, NetworkOutput.Energy}, c
         net = NeuralNetwork(chain, [], [])
         networks[element] = net
     end
-    setup = NetworkSetup(networks, data, config)
+    params = Flux.params((net.chain for (_, net) in networks)...)
+    setup = NetworkSetup(networks, params, data, config, 0.0)
 end
 
 const PotentialSetup = NetworkSetup{NetworkInput.Structure, NetworkOutput.Energy}
@@ -77,28 +80,42 @@ function precondition!(setup::PotentialSetup)
     setup
 end
 
+function loss_one(
+    nets::Dict{Int, NeuralNetwork},
+    structure::NetworkInput.Structure,
+    energy::NetworkOutput.Energy
+)
+    output = 0.0
+    for atom in structure.atom_types
+        net = nets[atom.element]
+        x = -net.means ./ net.variances
+        output += net.chain(x)[1]
+    end
+    err = output - energy.value
+end
+
 function loss_function(setup::PotentialSetup)
     nets = setup.networks
-    (structure::NetworkInput.Structure, energy::NetworkOutput.Energy) -> begin
-        output = 0.0
-        for atom in structure.atom_types
-            net = nets[atom.element]
-            x = -net.means ./ net.variances
-            output += net.chain(x)[1]
-        end
-        err = output - energy.value
-        err^2
+    (data_pairs::Vector{Tuple{NetworkInput.Structure, NetworkOutput.Energy}}) -> begin
+        loss = (sqrt ∘ sum)(loss_one(nets, structure, energy)^2 for (structure, energy) in data_pairs)
+        setup.current_loss = Tracker.data(loss)
+        loss
     end
 end
 
 function train!(setup::PotentialSetup)
     precondition!(setup)
     loss = loss_function(setup)
-    params = Flux.params((net.chain for (_, net) in setup.networks)...)
-    data = setup.data.data_pairs
-    optimizer = Flux.RMSProp()
-    callback = training_callback(setup)
+    params = setup.params
+    batch_data = setup.data.data_pairs
+    n_epoch = setup.config.num_epoch
+    data = Iterators.repeated((batch_data,), n_epoch)
+    optimizer = TrainingAlgorithms.optimizer(setup.config.algorithm)
+    callback = training_callback(setup, loss)
     @info "Training..."
+    println("Epoch     ε = √∑(E²)     |∇ε|")
+    println("-----------------------------------")
     Flux.train!(loss, params, data, optimizer; cb = callback)
+    @info "Final loss: $(setup.current_loss)"
     params
 end

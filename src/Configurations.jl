@@ -18,7 +18,7 @@ mutable struct Config
     num_angular::Int
     
     algorithm::Type{<:TrainingAlgorithms.TrainingAlgorithmType}
-    num_iteration::Int
+    num_epoch::Int
     threshold::Float64
     period_logging::Int
     checkpoint_input::Nullable{String}
@@ -38,7 +38,7 @@ function configure(;
     num_radial = 5,
     num_angular = 4,
     algorithm = TrainingAlgorithms.ResillientBackpropagation,
-    num_iteration = 300,
+    num_epoch = 300,
     threshold = 0.0,
     period_logging = 10,
     checkpoint_input = nothing,
@@ -51,7 +51,7 @@ function configure(;
     Config(
         input, output, hidden_layers, transfer,
         cutoff_radius, num_radial, num_angular,
-        algorithm, num_iteration, threshold, period_logging,
+        algorithm, num_epoch, threshold, period_logging,
         checkpoint_input, checkpoint_output, period_checkpoint,
         rng, force_restart
     )

@@ -20,13 +20,13 @@ function configure(continuing::Bool = false)
         num_radial = 5,      # 5 radial functions.
         num_angular = 4,     # 4 angular functions.
         # Training details
-        algorithm = TrainingAlgorithms.ResillientBackpropagation, # Set the algorithm used in training.
-        num_iteration = 300,                                           # Run 300 iterations for training.
-        threshold = 0.0,                                               # Threshold based on gradient for stopping.
-        period_logging = 10,                                           # Log every 10 steps.
-        checkpoint_input = continuing ? "potential" : nothing,         # Filename prefix for input checkpoints.
-        checkpoint_output = "potential",                               # Filename prefix for checkpoints.
-        period_checkpoint = 100,                                       # Save checkpoints every 100 steps.
+        algorithm = TrainingAlgorithms.RMSProp,                # Set the algorithm used in training.
+        num_epoch = 300,                                       # Run 300 iterations for training.
+        threshold = 0.0,                                       # Threshold based on gradient for stopping.
+        period_logging = 10,                                   # Log every 10 steps.
+        checkpoint_input = continuing ? "potential" : nothing, # Filename prefix for input checkpoints.
+        checkpoint_output = "potential",                       # Filename prefix for checkpoints.
+        period_checkpoint = 100,                               # Save checkpoints every 100 steps.
         # Others
         random_seed = 200701281, # Random seed for reproducibility.
         force_restart = !continuing
