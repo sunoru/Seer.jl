@@ -1,5 +1,6 @@
 import Random: randn
 
+import BSON
 import Flux
 import Flux: Tracker
 
@@ -19,20 +20,19 @@ function initialize!(data::Data{NetworkInput.Structure, NetworkOutput.Energy}, c
             push!(all_atom_types, x.element)
         end
     end
+    @info "Initializing for structures (mapping functions)..."
+    # Initialize structures
+    for (structure, _) in data.data_pairs
+        _structure.initialize!(
+            structure, config.cutoff_radius, config.num_radial, config.num_angular,
+            collect(all_atom_types)
+        )
+    end
     if config.checkpoint_input !== nothing
         networks = load(all_atom_types, config)
         params = Flux.params((net.chain for (_, net) in networks)...)
         setup = NetworkSetup(networks, params, data, config)
         return setup
-    end
-    @info "Initializing for structures (mapping functions)..."
-    # Initialize structures
-    for each in data.data_pairs
-        structure = each[1]
-        _structure.initialize!(
-            structure, config.cutoff_radius, config.num_radial, config.num_angular,
-            collect(all_atom_types)
-        )
     end
     @info "Initializing for networks..."
     # Initialize networks
@@ -91,9 +91,9 @@ function evaluate(
     structure::NetworkInput.Structure
 )
     output = 0.0
-    for atom in structure.atom_types
+    for (i, atom) in enumerate(structure.atom_types)
         net = nets[atom.element]
-        x = -net.means ./ net.variances
+        x = (structure.helper[].G[:, i] - net.means) ./ net.variances
         output += net.chain(x)[1]
     end
     output
