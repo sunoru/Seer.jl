@@ -4,6 +4,6 @@ include("./types.jl")
 
 include("./common.jl")
 
-include("./potential_train.jl")
+include("./potential.jl")
 
 end

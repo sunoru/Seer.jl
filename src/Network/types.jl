@@ -17,5 +17,4 @@ mutable struct NetworkSetup{I <: NetworkInput.NetworkInputType, O <: NetworkOutp
     params::Tracker.Params
     data::Data{I, O}
     config::Config
-    current_loss::Float64
 end
